@@ -101,7 +101,7 @@ namespace WindEditor
             writer.BaseStream.Seek(0, SeekOrigin.End);
             int delta = WMath.Pad32Delta(writer.BaseStream.Position);
             for (int i = 0; i < delta; i++)
-                writer.Write(0xFF);
+                writer.Write((byte)0xFF);
         }
 
         private void WriteActorToChunk(WActorNode actor, MapActorDescriptor template, EndianBinaryWriter writer)

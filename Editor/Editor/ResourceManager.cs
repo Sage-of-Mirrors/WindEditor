@@ -7,6 +7,8 @@ using System.IO;
 using System.Text;
 using WArchiveTools;
 using WArchiveTools.FileSystem;
+using JStudio.OpenGL;
+using OpenTK;
 
 namespace WindEditor
 {
@@ -42,11 +44,18 @@ namespace WindEditor
         private static List<TSharedRef<SimpleObjRenderer>> m_objList = new List<TSharedRef<SimpleObjRenderer>>();
 
         private static Dictionary<string, WActorDescriptor> m_actorDescriptors;
+        private static JStudio.OpenGL.GXLight m_mainLight;
+        private static JStudio.OpenGL.GXLight m_secondaryLight;
 
         static WResourceManager()
         {
             m_j3dList = new List<TSharedRef<J3D>>();
             m_objList = new List<TSharedRef<SimpleObjRenderer>>();
+
+            var lightPos = new Vector4(250, 200, 250, 0);
+            m_mainLight = new GXLight(lightPos, -lightPos.Normalized(), new Vector4(0, 0, 1, 1), new Vector4(1.075f, 0, 0, 0), new Vector4(1.075f, 0, 0, 0));
+            m_secondaryLight = new GXLight(lightPos, -lightPos.Normalized(), new Vector4(0, 0, 1, 1), new Vector4(1.075f, 0, 0, 0), new Vector4(1.075f, 0, 0, 0));
+            m_secondaryLight.Position = new Vector4(CalculateLightPosition((float)Math.PI / 2f), 0);
 
             // We're going to laod the actor descriptors from the json data, and then store them in a 
             // dictionary which is looked up by the Actor Name. This should give us a quick lookup time.
@@ -62,6 +71,13 @@ namespace WindEditor
 
                 m_actorDescriptors[descriptor.ActorName] = descriptor;
             }
+        }
+
+        private static Vector3 CalculateLightPosition(float angleInRad)
+        {
+            Quaternion lightRot = Quaternion.FromAxisAngle(Vector3.UnitY, angleInRad);
+            Vector3 newLightPos = Vector3.Transform(new Vector3(-500, 0, 0), lightRot) + new Vector3(0, 50, 0);
+            return newLightPos;
         }
 
         public static J3D LoadActorByName(string actorName)
@@ -104,8 +120,24 @@ namespace WindEditor
             byte[] j3dData = archiveFile.Data;
 
             J3D j3d = new J3D(archiveFile.Name);
+
             using (EndianBinaryReader reader = new EndianBinaryReader(j3dData, Endian.Big))
                 j3d.LoadFromStream(reader, Properties.Settings.Default.DumpTexturesToDisk, Properties.Settings.Default.DumpShadersToDisk);
+
+            j3d.SetHardwareLight(0, m_mainLight);
+            j3d.SetHardwareLight(1, m_secondaryLight);
+
+            // Apply patches for Wind Waker by default, since they don't seem to break anything else.
+            j3d.SetTextureOverride("ZBtoonEX", "resources/textures/ZBtoonEX.png");
+            j3d.SetTextureOverride("ZAtoon", "resources/textures/ZAtoon.png");
+            j3d.SetColorWriteOverride("eyeLdamA", false);
+            j3d.SetColorWriteOverride("eyeLdamB", false);
+            j3d.SetColorWriteOverride("mayuLdamA", false);
+            j3d.SetColorWriteOverride("mayuLdamB", false);
+            j3d.SetColorWriteOverride("eyeRdamA", false);
+            j3d.SetColorWriteOverride("eyeRdamB", false);
+            j3d.SetColorWriteOverride("mayuRdamA", false);
+            j3d.SetColorWriteOverride("mayuRdamB", false);
 
             existRef = new TSharedRef<J3D>();
             existRef.FilePath = actorName;
@@ -125,6 +157,21 @@ namespace WindEditor
                 J3D j3d = new J3D(Path.GetFileNameWithoutExtension(filePath));
                 using (EndianBinaryReader reader = new EndianBinaryReader(File.ReadAllBytes(filePath), Endian.Big))
                     j3d.LoadFromStream(reader, Properties.Settings.Default.DumpTexturesToDisk, Properties.Settings.Default.DumpShadersToDisk);
+
+                j3d.SetHardwareLight(0, m_mainLight);
+                j3d.SetHardwareLight(1, m_secondaryLight);
+
+                // Apply patches for Wind Waker by default, since they don't seem to break anything else.
+                j3d.SetTextureOverride("ZBtoonEX", "resources/textures/ZBtoonEX.png");
+                j3d.SetTextureOverride("ZAtoon", "resources/textures/ZAtoon.png");
+                j3d.SetColorWriteOverride("eyeLdamA", false);
+                j3d.SetColorWriteOverride("eyeLdamB", false);
+                j3d.SetColorWriteOverride("mayuLdamA", false);
+                j3d.SetColorWriteOverride("mayuLdamB", false);
+                j3d.SetColorWriteOverride("eyeRdamA", false);
+                j3d.SetColorWriteOverride("eyeRdamB", false);
+                j3d.SetColorWriteOverride("mayuRdamA", false);
+                j3d.SetColorWriteOverride("mayuRdamB", false);
 
                 existRef = new TSharedRef<J3D>();
                 existRef.FilePath = filePath;

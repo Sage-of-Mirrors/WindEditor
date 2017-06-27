@@ -1,0 +1,184 @@
+﻿<Window x:Class="WindEditor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WindEditor"
+        xmlns:wpf="clr-namespace:WindEditor.WPF;assembly=WCommon"
+        xmlns:vm="clr-namespace:WindEditor.ViewModel"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="500" Width="890" Loaded="Window_Loaded" AllowDrop="True" Drop="Window_Drop">
+    <Window.InputBindings>
+        <KeyBinding Command="{Binding Path=WindEditor.MainWorld.UndoStack.UndoCommand}" Key="Z" Modifiers="Ctrl"/>
+        <KeyBinding Command="{Binding Path=WindEditor.MainWorld.UndoStack.RedoCommand}" Key="Y" Modifiers="Ctrl"/>
+        <KeyBinding Command="{Binding Path=WindEditor.OpenProjectCommand}" Key="O" Modifiers="Ctrl"/>
+        <KeyBinding Command="{Binding Path=WindEditor.SaveProjectCommand}" Key="S" Modifiers="Ctrl"/>
+        <KeyBinding Command="{Binding Path=WindEditor.SaveProjectAsCommand}" Key="S" Modifiers="Ctrl+Shift"/>
+        <KeyBinding Command="{Binding Path=WindEditor.MainWorld.ActorEditor.CutSelectionCommand}" Key="X" Modifiers="Ctrl"/>
+        <KeyBinding Command="{Binding Path=WindEditor.MainWorld.ActorEditor.CopySelectionCommand}" Key="C" Modifiers="Ctrl"/>
+        <KeyBinding Command="{Binding Path=WindEditor.MainWorld.ActorEditor.PasteSelectionCommand}" Key="V" Modifiers="Ctrl"/>
+        <KeyBinding Command="{Binding Path=WindEditor.MainWorld.ActorEditor.DeleteSelectionCommand}" Key="Delete"/>
+        <KeyBinding Command="{Binding Path=WindEditor.MainWorld.ActorEditor.SelectAllCommand}" Key="A" Modifiers="Ctrl"/>
+        <KeyBinding Command="{Binding Path=WindEditor.MainWorld.ActorEditor.SelectNoneCommand}" Key="D" Modifiers="Shift"/>
+    </Window.InputBindings>
+    <Window.DataContext>
+        <vm:MainWindowViewModel/>
+    </Window.DataContext>
+    <Window.Resources>
+        <DataTemplate x:Key="ItemTemplate">
+            <TextBlock Text="{Binding Path=Name}" Foreground="Black"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SelectedTemplate">
+            <TextBlock Text="{Binding Path=Name}" Foreground="Red"/>
+        </DataTemplate>
+
+        <Style TargetType="{x:Type ListBoxItem}" x:Key="ContainerStyle">
+            <Setter Property="ContentTemplate" Value="{StaticResource ItemTemplate}"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="ContentTemplate" Value="{StaticResource SelectedTemplate}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Menu IsMainMenu="True" Grid.Row="0">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open..." InputGestureText="Ctrl + O" Command="{Binding Path=WindEditor.OpenProjectCommand}"/>
+                <MenuItem Header="_Save" InputGestureText="Ctrl + S" Command="{Binding Path=WindEditor.SaveProjectCommand}"/>
+                <MenuItem Header="_Save As..." InputGestureText="Ctrl + Shift + S" Command="{Binding Path=WindEditor.SaveProjectAsCommand}"/>
+                <Separator/>
+                <MenuItem Header="_Close" Command="{Binding Path=WindEditor.CloseProjectCommand}"/>
+                <Separator/>
+                <MenuItem Header="E_xit" Command="{Binding Path=ExitApplicationCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo" InputGestureText="Ctrl + Z" Command="{Binding Path=WindEditor.MainWorld.UndoStack.UndoCommand}" >
+                    <MenuItem.Icon>
+                        <Image Source="../resources/ui/undo_16x.png"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Redo" InputGestureText="Ctrl + Y" Command="{Binding Path=WindEditor.MainWorld.UndoStack.RedoCommand}" >
+                    <MenuItem.Icon>
+                        <Image Source="../resources/ui/redo_16x.png"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Cu_t" InputGestureText="Ctrl + X" Command="{Binding Path=WindEditor.MainWorld.ActorEditor.CutSelectionCommand}">
+                    <MenuItem.Icon>
+                        <Image Source="../resources/ui/cut_16x.png"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Copy" InputGestureText="Ctrl + C" Command="{Binding Path=WindEditor.MainWorld.ActorEditor.CopySelectionCommand}">
+                    <MenuItem.Icon>
+                        <Image Source="../resources/ui/copy_16x.png"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Paste" InputGestureText="Ctrl + V" Command="{Binding Path=WindEditor.MainWorld.ActorEditor.PasteSelectionCommand}">
+                    <MenuItem.Icon>
+                        <Image Source="../resources/ui/paste_16x.png"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Delete" InputGestureText="Del" Command="{Binding Path=WindEditor.MainWorld.ActorEditor.DeleteSelectionCommand}">
+                    <MenuItem.Icon>
+                        <Image Source="../resources/ui/deleteuser_16x.png"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Select _All" InputGestureText="Ctrl + A" Command="{Binding Path=WindEditor.MainWorld.ActorEditor.SelectAllCommand}"/>
+                <MenuItem Header="Select _None" InputGestureText="Shift + D" Command="{Binding Path=WindEditor.MainWorld.ActorEditor.SelectNoneCommand}"/>
+                <Separator/>
+                <MenuItem Header="Set Data Root..." Command="{Binding Path=SetDataRootCommand}"/>
+            </MenuItem>
+            <MenuItem Header="Create">
+                <MenuItem Header="Actor" Command="{Binding Path=WindEditor.MainWorld.ActorEditor.CreateEntityCommand}" CommandParameter="ACTR"/>
+                <Separator/>
+                <MenuItem Header="Player Spawn" Command="{Binding Path=WindEditor.MainWorld.ActorEditor.CreateEntityCommand}" CommandParameter="PLYR"/>
+                <MenuItem Header="Ship Spawn" Command="{Binding Path=WindEditor.MainWorld.ActorEditor.CreateEntityCommand}" CommandParameter="SHIP"/>
+                <Separator/>
+                <MenuItem Header="Treasure Chest" Command="{Binding Path=WindEditor.MainWorld.ActorEditor.CreateEntityCommand}" CommandParameter="TRES"/>
+                <MenuItem Header="Exit Info" Command="{Binding Path=WindEditor.MainWorld.ActorEditor.CreateEntityCommand}" CommandParameter="SCLS"/>
+            </MenuItem>
+        </Menu>
+        <Grid Grid.Row="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="248"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="5"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0">
+                            <DockPanel>
+                                <ListBox DockPanel.Dock="Bottom" ItemsSource="{Binding Path=WindEditor.MainWorld.Map.SceneList}" SelectedItem="{Binding Path=WindEditor.MainWorld.Map.FocusedScene}" ItemContainerStyle="{StaticResource ContainerStyle}">
+                                    
+                                </ListBox>
+                            </DockPanel>
+                        </Grid>
+                        <GridSplitter Grid.Column="1" HorizontalContentAlignment="Stretch"/>
+                        <Grid Grid.Column="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <WindowsFormsHost Grid.Row="0" x:Name="glControlHost"/>
+                            <DockPanel Grid.Row="1" Margin="0,2">
+                                <Label Content="Time of Day" Margin="0,0,5,0" Padding="2" DockPanel.Dock="Left"/>
+                                <Label Content="{Binding Path=WindEditor.MainWorld.Map.FocusedSceneLabel}" Padding="0" DockPanel.Dock="Right" Foreground="Red"/>
+                                <Slider TickPlacement="None" IsMoveToPointEnabled="True" Minimum="0" Maximum="1" Value="{Binding Path=WindEditor.MainWorld.Map.TimeOfDay}"/>
+                            </DockPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+
+                <DockPanel Grid.Column="1" DataContext="{Binding Path=WindEditor.MainWorld.ActorEditor}">
+                    <DockPanel DockPanel.Dock="Bottom">
+                        <Label DockPanel.Dock="Left" Content="FourCC:"/>
+                        <Label DockPanel.Dock="Right" HorizontalContentAlignment="Right" Content="{Binding Path=SelectedObjects.FourCC}"/>
+                    </DockPanel>
+                    <DockPanel DockPanel.Dock="Bottom">
+                        <Label DockPanel.Dock="Left" Content="Layer:"/>
+                        <ComboBox DockPanel.Dock="Right" ItemsSource="{Binding Source={wpf:EnumBindingSource {x:Type local:MapLayer}}}" Margin="80,0,0,0" SelectedItem="{Binding Path=SelectedObjects.Layer}"/>
+                    </DockPanel>
+                    <GroupBox DockPanel.Dock="Top" Header="Object Properties" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <ListView  ItemsSource="{Binding Path=SelectedObjects.Values}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="0"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Name}" Width="80"/>
+                                    <GridViewColumn Header="Value" CellTemplateSelector="{StaticResource PropertyValueTemplateSelector}">
+                                        <!-- We need to use a custom converter and some binding magic to force the Value column to take up all of the remaining space.-->
+                                        <GridViewColumn.Width>
+                                            <MultiBinding Converter="{StaticResource LastColumnMaximizerConverter}">
+                                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=ListView}"/>
+                                                <Binding Path="View.Columns" RelativeSource="{RelativeSource AncestorType=ListView}"/>
+                                            </MultiBinding>
+                                        </GridViewColumn.Width>
+                                    </GridViewColumn>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </GroupBox>
+                </DockPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
